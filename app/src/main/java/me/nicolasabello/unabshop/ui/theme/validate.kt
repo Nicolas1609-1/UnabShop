@@ -2,8 +2,7 @@ package me.nicolasabello.unabshop.ui.theme
 
 import android.util.Patterns
 
-//returnar un true si es valido y un false si no es valido
-//tambien retone una cadena que me diga que paso si no es valido
+
 
 fun validateEmail(email: String): Pair<Boolean, String> {
     return when {
