@@ -6,7 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import me.nicolasabello.unabshop.HomeScreen
+import me.nicolasabello.unabshop.ui.HomeScreen
 import me.nicolasabello.unabshop.LoginScreen
 import me.nicolasabello.unabshop.RegisterScreen
 
