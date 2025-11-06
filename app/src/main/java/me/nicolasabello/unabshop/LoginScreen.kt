@@ -1,4 +1,3 @@
-
 package me.nicolasabello.unabshop
 
 import android.app.Activity
@@ -63,7 +62,7 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 🔸 Logo UNAB restaurado
+            // 🔹 Logo
             Image(
                 painter = painterResource(id = R.drawable.img_icon_unab),
                 contentDescription = "Logo UNAB",
@@ -72,7 +71,7 @@ fun LoginScreen(
                     .padding(bottom = 16.dp)
             )
 
-            // 🔸 Título
+            // 🔹 Título
             Text(
                 text = "Iniciar Sesión",
                 fontSize = 28.sp,
@@ -82,20 +81,17 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 🔸 Campo de correo
+            // 🔹 Campo de correo
             OutlinedTextField(
                 value = inputEmail,
                 onValueChange = { inputEmail = it },
                 label = { Text("Correo Electrónico") },
                 leadingIcon = {
-                    Icon(
-                        Icons.Default.Email,
-                        contentDescription = "Email",
-                        tint = Color(0xFF666666)
-                    )
+                    Icon(Icons.Default.Email, contentDescription = "Email", tint = Color(0xFF666666))
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
+                isError = emailError.isNotEmpty(),
                 supportingText = {
                     if (emailError.isNotEmpty()) Text(emailError, color = Color.Red)
                 },
@@ -108,24 +104,17 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔸 Campo de contraseña
+            // 🔹 Campo de contraseña
             OutlinedTextField(
                 value = inputPassword,
                 onValueChange = { inputPassword = it },
                 label = { Text("Contraseña") },
                 leadingIcon = {
-                    Icon(
-                        Icons.Default.Lock,
-                        contentDescription = "Contraseña",
-                        tint = Color(0xFF666666)
-                    )
+                    Icon(Icons.Default.Lock, contentDescription = "Contraseña", tint = Color(0xFF666666))
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFFFF9900),
-                    unfocusedBorderColor = Color(0xFFCCCCCC)
-                ),
+                isError = passwordError.isNotEmpty(),
                 supportingText = {
                     if (passwordError.isNotEmpty()) Text(passwordError, color = Color.Red)
                 },
@@ -139,21 +128,19 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 🔸 Error de login
+            // 🔹 Error de inicio de sesión
             if (loginError.isNotEmpty()) {
                 Text(loginError, color = Color.Red, modifier = Modifier.fillMaxWidth())
             }
 
-            // 🔸 Botón de iniciar sesión
+            // 🔹 Botón de iniciar sesión
             Button(
                 onClick = {
-                    val emailValidation = validateEmail(inputEmail)
-                    val passwordValidation = validatePassword(inputPassword)
+                    val (isValidEmail, emailMsg) = validateEmail(inputEmail)
+                    val (isValidPassword, passMsg) = validatePassword(inputPassword)
 
-                    val isValidEmail = emailValidation.first
-                    val isValidPassword = passwordValidation.first
-                    emailError = emailValidation.second
-                    passwordError = passwordValidation.second
+                    emailError = emailMsg
+                    passwordError = passMsg
 
                     if (isValidEmail && isValidPassword) {
                         auth.signInWithEmailAndPassword(inputEmail, inputPassword)
@@ -162,7 +149,7 @@ fun LoginScreen(
                                     onSuccessfulLogin()
                                 } else {
                                     loginError = when (task.exception) {
-                                        is FirebaseAuthInvalidCredentialsException -> "Correo o contraseña incorrecta"
+                                        is FirebaseAuthInvalidCredentialsException -> "Correo o contraseña incorrectos"
                                         is FirebaseAuthInvalidUserException -> "No existe una cuenta con este correo"
                                         else -> "Error al iniciar sesión. Intenta de nuevo"
                                     }
@@ -183,10 +170,11 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔸 Botón de registro
+            // 🔹 Botón de registro
             TextButton(onClick = onClickRegister) {
                 Text("¿No tienes una cuenta? Regístrate", color = Color(0xFFFF9900))
             }
         }
     }
 }
+
