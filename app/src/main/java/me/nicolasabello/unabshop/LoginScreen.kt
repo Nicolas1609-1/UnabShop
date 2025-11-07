@@ -2,7 +2,6 @@ package me.nicolasabello.unabshop
 
 import android.app.Activity
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,11 +24,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
-import me.nicolasabello.unabshop.ui.theme.validateEmail
-import me.nicolasabello.unabshop.ui.theme.validatePassword
+import com.google.firebase.auth.auth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,7 +35,7 @@ fun LoginScreen(
     onSuccessfulLogin: () -> Unit = {}
 ) {
     val auth = Firebase.auth
-    val activity = LocalView.current.context as Activity
+    val activity = LocalView.current.context as? Activity
 
     var inputEmail by remember { mutableStateOf("") }
     var inputPassword by remember { mutableStateOf("") }
@@ -55,23 +52,20 @@ fun LoginScreen(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
-                .background(Color(0xFFF5F5F5))
                 .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 32.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 🔹 Logo
             Image(
                 painter = painterResource(id = R.drawable.img_icon_unab),
                 contentDescription = "Logo UNAB",
-                modifier = Modifier
-                    .size(180.dp)
-                    .padding(bottom = 16.dp)
+                modifier = Modifier.size(200.dp)
             )
 
-            // 🔹 Título
+            Spacer(modifier = Modifier.height(32.dp))
+
             Text(
                 text = "Iniciar Sesión",
                 fontSize = 28.sp,
@@ -81,20 +75,15 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 🔹 Campo de correo
+            // Correo
             OutlinedTextField(
                 value = inputEmail,
                 onValueChange = { inputEmail = it },
                 label = { Text("Correo Electrónico") },
-                leadingIcon = {
-                    Icon(Icons.Default.Email, contentDescription = "Email", tint = Color(0xFF666666))
-                },
+                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                isError = emailError.isNotEmpty(),
-                supportingText = {
-                    if (emailError.isNotEmpty()) Text(emailError, color = Color.Red)
-                },
+                supportingText = { if (emailError.isNotEmpty()) Text(emailError, color = Color.Red) },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
                     capitalization = KeyboardCapitalization.None,
@@ -104,36 +93,23 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔹 Campo de contraseña
+            // Contraseña
             OutlinedTextField(
                 value = inputPassword,
                 onValueChange = { inputPassword = it },
                 label = { Text("Contraseña") },
-                leadingIcon = {
-                    Icon(Icons.Default.Lock, contentDescription = "Contraseña", tint = Color(0xFF666666))
-                },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                isError = passwordError.isNotEmpty(),
-                supportingText = {
-                    if (passwordError.isNotEmpty()) Text(passwordError, color = Color.Red)
-                },
                 visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.None,
-                    autoCorrect = false,
-                    keyboardType = KeyboardType.Password
-                )
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                supportingText = { if (passwordError.isNotEmpty()) Text(passwordError, color = Color.Red) }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 🔹 Error de inicio de sesión
-            if (loginError.isNotEmpty()) {
-                Text(loginError, color = Color.Red, modifier = Modifier.fillMaxWidth())
-            }
+            if (loginError.isNotEmpty()) Text(loginError, color = Color.Red)
 
-            // 🔹 Botón de iniciar sesión
             Button(
                 onClick = {
                     val (isValidEmail, emailMsg) = validateEmail(inputEmail)
@@ -142,7 +118,7 @@ fun LoginScreen(
                     emailError = emailMsg
                     passwordError = passMsg
 
-                    if (isValidEmail && isValidPassword) {
+                    if (isValidEmail && isValidPassword && activity != null) {
                         auth.signInWithEmailAndPassword(inputEmail, inputPassword)
                             .addOnCompleteListener(activity) { task ->
                                 if (task.isSuccessful) {
@@ -151,7 +127,7 @@ fun LoginScreen(
                                     loginError = when (task.exception) {
                                         is FirebaseAuthInvalidCredentialsException -> "Correo o contraseña incorrectos"
                                         is FirebaseAuthInvalidUserException -> "No existe una cuenta con este correo"
-                                        else -> "Error al iniciar sesión. Intenta de nuevo"
+                                        else -> "Error al iniciar sesión"
                                     }
                                 }
                             }
@@ -170,11 +146,9 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔹 Botón de registro
             TextButton(onClick = onClickRegister) {
                 Text("¿No tienes una cuenta? Regístrate", color = Color(0xFFFF9900))
             }
         }
     }
 }
-

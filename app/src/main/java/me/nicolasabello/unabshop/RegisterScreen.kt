@@ -31,10 +31,12 @@ import com.google.firebase.auth.auth
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(onClickBack: () -> Unit = {}, onSuccesfullRegister: () -> Unit = {}) {
-
+fun RegisterScreen(
+    onClickBack: () -> Unit = {},
+    onSuccesfullRegister: () -> Unit = {}
+) {
     val auth = Firebase.auth
-    val activity = LocalView.current.context as Activity
+    val activity = LocalView.current.context as? Activity
 
     var inputName by remember { mutableStateOf("") }
     var inputEmail by remember { mutableStateOf("") }
@@ -45,7 +47,6 @@ fun RegisterScreen(onClickBack: () -> Unit = {}, onSuccesfullRegister: () -> Uni
     var emailError by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf("") }
     var passwordConfirmationError by remember { mutableStateOf("") }
-
     var registerError by remember { mutableStateOf("") }
 
     Scaffold(
@@ -76,7 +77,7 @@ fun RegisterScreen(onClickBack: () -> Unit = {}, onSuccesfullRegister: () -> Uni
         ) {
             Image(
                 painter = painterResource(id = R.drawable.img_icon_unab),
-                contentDescription = "Usuario",
+                contentDescription = "Logo",
                 modifier = Modifier.size(150.dp)
             )
 
@@ -91,64 +92,59 @@ fun RegisterScreen(onClickBack: () -> Unit = {}, onSuccesfullRegister: () -> Uni
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Nombre
             OutlinedTextField(
                 value = inputName,
                 onValueChange = { inputName = it },
                 label = { Text("Nombre") },
-                leadingIcon = { Icon(Icons.Default.Person, "Nombre") },
+                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                supportingText = {
-                    if (nameError.isNotEmpty()) Text(nameError, color = Color.Red)
-                }
+                supportingText = { if (nameError.isNotEmpty()) Text(nameError, color = Color.Red) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Correo
             OutlinedTextField(
                 value = inputEmail,
                 onValueChange = { inputEmail = it },
                 label = { Text("Correo Electrónico") },
-                leadingIcon = { Icon(Icons.Default.Email, "Email") },
+                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                supportingText = {
-                    if (emailError.isNotEmpty()) Text(emailError, color = Color.Red)
-                }
+                supportingText = { if (emailError.isNotEmpty()) Text(emailError, color = Color.Red) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Contraseña
             OutlinedTextField(
                 value = inputPassword,
                 onValueChange = { inputPassword = it },
                 label = { Text("Contraseña") },
-                leadingIcon = { Icon(Icons.Default.Lock, "Contraseña") },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                supportingText = {
-                    if (passwordError.isNotEmpty()) Text(passwordError, color = Color.Red)
-                }
+                supportingText = { if (passwordError.isNotEmpty()) Text(passwordError, color = Color.Red) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Confirmar Contraseña
             OutlinedTextField(
                 value = inputPasswordConfirmation,
                 onValueChange = { inputPasswordConfirmation = it },
                 label = { Text("Confirmar Contraseña") },
-                leadingIcon = { Icon(Icons.Default.Lock, "Confirmar Contraseña") },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                supportingText = {
-                    if (passwordConfirmationError.isNotEmpty())
-                        Text(passwordConfirmationError, color = Color.Red)
-                }
+                supportingText = { if (passwordConfirmationError.isNotEmpty()) Text(passwordConfirmationError, color = Color.Red) }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -159,33 +155,35 @@ fun RegisterScreen(onClickBack: () -> Unit = {}, onSuccesfullRegister: () -> Uni
 
             Button(
                 onClick = {
-                    val isValidName = validateName(inputName).first
-                    val isValidEmail = validateEmail(inputEmail).first
-                    val isValidPassword = validatePassword(inputPassword).first
-                    val isValidPasswordConfirmation =
-                        validateConfirmPassword(inputPassword, inputPasswordConfirmation).first
+                    val (isValidName, nameMsg) = validateName(inputName)
+                    val (isValidEmail, emailMsg) = validateEmail(inputEmail)
+                    val (isValidPassword, passMsg) = validatePassword(inputPassword)
+                    val (isValidConfirm, confirmMsg) = validateConfirmPassword(
+                        inputPassword, inputPasswordConfirmation
+                    )
 
-                    nameError = validateName(inputName).second
-                    emailError = validateEmail(inputEmail).second
-                    passwordError = validatePassword(inputPassword).second
-                    passwordConfirmationError =
-                        validateConfirmPassword(inputPassword, inputPasswordConfirmation).second
+                    nameError = nameMsg
+                    emailError = emailMsg
+                    passwordError = passMsg
+                    passwordConfirmationError = confirmMsg
 
-                    if (isValidName && isValidEmail && isValidPassword && isValidPasswordConfirmation) {
-                        auth.createUserWithEmailAndPassword(inputEmail, inputPassword)
-                            .addOnCompleteListener(activity) { task ->
-                                if (task.isSuccessful) {
-                                    onSuccesfullRegister()
-                                } else {
-                                    registerError = when (task.exception) {
-                                        is FirebaseAuthInvalidCredentialsException -> "Correo inválido"
-                                        is FirebaseAuthUserCollisionException -> "Correo ya registrado"
-                                        else -> "Error al registrarse"
+                    if (isValidName && isValidEmail && isValidPassword && isValidConfirm) {
+                        if (activity != null) {
+                            auth.createUserWithEmailAndPassword(inputEmail, inputPassword)
+                                .addOnCompleteListener(activity) { task ->
+                                    if (task.isSuccessful) {
+                                        onSuccesfullRegister()
+                                    } else {
+                                        registerError = when (task.exception) {
+                                            is FirebaseAuthInvalidCredentialsException -> "Correo inválido"
+                                            is FirebaseAuthUserCollisionException -> "Correo ya registrado"
+                                            else -> "Error al registrarse"
+                                        }
                                     }
                                 }
-                            }
+                        }
                     } else {
-                        registerError = "Verifica los campos e intenta de nuevo"
+                        registerError = "Por favor, corrige los errores antes de continuar"
                     }
                 },
                 modifier = Modifier
@@ -198,24 +196,4 @@ fun RegisterScreen(onClickBack: () -> Unit = {}, onSuccesfullRegister: () -> Uni
             }
         }
     }
-}
-
-fun validateName(name: String): Pair<Boolean, String> {
-    return if (name.isBlank()) Pair(false, "El nombre no puede estar vacío") else Pair(true, "")
-}
-
-fun validateEmail(email: String): Pair<Boolean, String> {
-    return if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-        Pair(false, "Correo electrónico no válido")
-    } else Pair(true, "")
-}
-
-fun validatePassword(password: String): Pair<Boolean, String> {
-    return if (password.length < 6) Pair(false, "La contraseña debe tener al menos 6 caracteres")
-    else Pair(true, "")
-}
-
-fun validateConfirmPassword(password: String, confirm: String): Pair<Boolean, String> {
-    return if (password != confirm) Pair(false, "Las contraseñas no coinciden")
-    else Pair(true, "")
 }

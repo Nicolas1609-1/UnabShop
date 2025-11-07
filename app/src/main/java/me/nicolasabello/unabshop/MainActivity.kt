@@ -14,7 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import me.nicolasabello.unabshop.ui.theme.NavigationApp
+import me.nicolasabello.unabshop.NavigationApp
 import me.nicolasabello.unabshop.ui.theme.UnabShopTheme
 
 class MainActivity : ComponentActivity() {
